@@ -1,0 +1,220 @@
+.thai-food-pairing {
+  background: linear-gradient(135deg, #fff5f5 0%, #fff9f9 100%);
+  border-radius: 12px;
+  padding: 24px;
+  margin: 20px 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid #ffe6e6;
+}
+
+.pairing-header h3 {
+  color: #2c3e50;
+  margin: 0 0 8px 0;
+  font-size: 1.3em;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pairing-header h3::before {
+  content: '🇹🇭';
+  font-size: 1.2em;
+}
+
+.wine-style-note {
+  margin: 0 0 16px 0;
+  font-size: 0.9em;
+  color: #6c757d;
+  font-style: italic;
+}
+
+.pairing-intro {
+  background: rgba(255, 255, 255, 0.7);
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border-left: 4px solid #e74c3c;
+}
+
+.pairing-intro p {
+  margin: 0;
+  color: #495057;
+  line-height: 1.6;
+}
+
+.pairings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.pairing-card {
+  background: white;
+  border-radius: 10px;
+  padding: 18px;
+  border: 1px solid #f1f3f4;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.pairing-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #e74c3c, #f39c12, #27ae60);
+}
+
+.pairing-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.dish-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  gap: 12px;
+}
+
+.dish-names {
+  flex: 1;
+}
+
+.dish-name {
+  margin: 0 0 4px 0;
+  font-size: 1.1em;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.thai-name {
+  font-size: 0.9em;
+  color: #e74c3c;
+  font-weight: 500;
+  background: #fff5f5;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.spice-indicator {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 16px;
+  color: white;
+  font-size: 0.8em;
+  font-weight: 600;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.spice-icon {
+  font-size: 1em;
+}
+
+.dish-description {
+  margin-bottom: 16px;
+}
+
+.dish-description p {
+  margin: 0;
+  color: #495057;
+  line-height: 1.5;
+  font-size: 0.95em;
+}
+
+.pairing-reason {
+  background: #f8f9fa;
+  padding: 12px;
+  border-radius: 8px;
+  border-left: 3px solid #6f42c1;
+}
+
+.reason-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.reason-icon {
+  font-size: 1.1em;
+}
+
+.reason-title {
+  font-weight: 600;
+  color: #6f42c1;
+  font-size: 0.9em;
+}
+
+.pairing-reason p {
+  margin: 0;
+  color: #495057;
+  font-size: 0.9em;
+  line-height: 1.5;
+}
+
+.pairing-tips {
+  background: rgba(255, 255, 255, 0.9);
+  padding: 18px;
+  border-radius: 8px;
+  border: 1px dashed #e9ecef;
+}
+
+.pairing-tips h4 {
+  margin: 0 0 12px 0;
+  color: #2c3e50;
+  font-size: 1em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pairing-tips h4::before {
+  content: '💡';
+  font-size: 1.1em;
+}
+
+.pairing-tips ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.pairing-tips li {
+  color: #495057;
+  margin-bottom: 6px;
+  font-size: 0.9em;
+  line-height: 1.5;
+}
+
+.pairing-tips li:last-child {
+  margin-bottom: 0;
+}
+
+@media (max-width: 768px) {
+  .thai-food-pairing {
+    padding: 18px;
+  }
+  
+  .pairings-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .dish-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .spice-indicator {
+    align-self: flex-end;
+  }
+}

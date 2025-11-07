@@ -1,0 +1,117 @@
+.wine-reviews {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.wine-reviews h3 {
+  color: #2c3e50;
+  margin: 0 0 16px 0;
+  font-size: 1.2em;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.wine-reviews h3::before {
+  content: '📝';
+  font-size: 1.1em;
+}
+
+.reviews-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.review-card {
+  background: white;
+  border-radius: 10px;
+  padding: 16px;
+  border: 1px solid #e9ecef;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.review-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  gap: 12px;
+}
+
+.critic-info {
+  flex: 1;
+}
+
+.critic-name {
+  margin: 0 0 4px 0;
+  font-size: 1.05em;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.publication {
+  font-size: 0.85em;
+  color: #6c757d;
+  font-style: italic;
+}
+
+.rating-badge {
+  background: #6f42c1;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.9em;
+  min-width: 50px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.review-content {
+  margin-bottom: 12px;
+}
+
+.review-content p {
+  margin: 0;
+  line-height: 1.6;
+  color: #495057;
+  font-style: italic;
+  position: relative;
+}
+
+.review-date {
+  font-size: 0.8em;
+  color: #6c757d;
+  text-align: right;
+  border-top: 1px solid #f1f3f4;
+  padding-top: 8px;
+}
+
+@media (max-width: 768px) {
+  .wine-reviews {
+    padding: 16px;
+  }
+  
+  .review-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .rating-badge {
+    align-self: flex-end;
+  }
+  
+  .review-date {
+    text-align: left;
+  }
+}

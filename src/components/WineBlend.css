@@ -1,0 +1,87 @@
+.wine-blend {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.wine-blend h3 {
+  color: #2c3e50;
+  margin: 0 0 16px 0;
+  font-size: 1.2em;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.wine-blend h3::before {
+  content: '🍇';
+  font-size: 1.1em;
+}
+
+.blend-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.blend-item {
+  background: white;
+  border-radius: 8px;
+  padding: 12px;
+  border: 1px solid #e9ecef;
+}
+
+.blend-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.grape-name {
+  font-weight: 500;
+  color: #495057;
+  font-size: 0.95em;
+}
+
+.grape-percentage {
+  font-weight: 600;
+  color: #6f42c1;
+  background: #f8f3ff;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.85em;
+}
+
+.blend-bar {
+  height: 8px;
+  background: #e9ecef;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.blend-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #6f42c1, #8e44ad);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+@media (max-width: 768px) {
+  .wine-blend {
+    padding: 16px;
+  }
+  
+  .blend-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  
+  .grape-percentage {
+    align-self: flex-end;
+  }
+}
