@@ -1,4 +1,5 @@
 import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
+import { HumanMessage } from '@langchain/core/messages';
 
 interface WineData {
   wine_name: string;
@@ -497,20 +498,19 @@ Return JSON in this format:
         }
         `;
 
-        const response = await this.llm!.invoke([
-          {
-            role: "user",
-            content: [
-              { type: "text", text: prompt },
-              {
-                type: "image_url",
-                image_url: {
-                  url: `data:${imageFile.type};base64,${base64Image}`,
-                },
+        const message = new HumanMessage({
+          content: [
+            { type: "text", text: prompt },
+            {
+              type: "image_url",
+              image_url: {
+                url: `data:${imageFile.type};base64,${base64Image}`,
               },
-            ],
-          },
-        ]);
+            },
+          ],
+        });
+
+        const response = await this.llm!.invoke([message]);
 
         let responseContent = response.content as string;
         
