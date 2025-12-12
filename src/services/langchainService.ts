@@ -1,5 +1,5 @@
 import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
-import { HumanMessage } from '@langchain/core/messages';
+// import { HumanMessage } from '@langchain/core/messages';
 
 interface WineData {
   wine_name: string;
@@ -34,6 +34,18 @@ interface EnhancedWineData extends WineData {
 //  blend: [
 //           { grape: "Nebbiolo", percentage: 100 }
 //         ],
+// Real API response structure
+interface RealAPIWineResponse {
+  wine_name: string;
+  grape_varieties?: string[];
+  region?: string;
+  scores?: string;
+  tasting_notes?: string;
+  pricing?: string;
+  full_reviews?: string;
+  references?: string;
+}
+
 interface WineAnalysisResult {
   wine_name: string;
   rating?: number;
@@ -55,6 +67,12 @@ interface WineAnalysisResult {
     reviewDate: string;
   }>;
   error_message?: string;
+  // New fields from real API
+  grape_varieties?: string[];
+  scores?: string;
+  pricing?: string;
+  full_reviews?: string;
+  references?: string;
 }
 
 class LangChainWineService {
@@ -211,32 +229,32 @@ class LangChainWineService {
     );
   }
 
-  async chatWithWineExpert(message: string, wineContext?: WineData): Promise<string> {
-    if (!this.apiKey || !this.llm) {
-      return this.getMockChatResponse(message, wineContext);
-    }
+  // async chatWithWineExpert(message: string, wineContext?: WineData): Promise<string> {
+  //   if (!this.apiKey || !this.llm) {
+  //     return this.getMockChatResponse(message, wineContext);
+  //   }
 
-    try {
-      return await this.enqueueRequest(async () => {
-        let contextPrompt = "You are a professional sommelier and wine expert. ";
+  //   try {
+  //     return await this.enqueueRequest(async () => {
+  //       let contextPrompt = "You are a professional sommelier and wine expert. ";
         
-        if (wineContext) {
-          contextPrompt += `The user is asking about the wine: ${wineContext.wine_name} ` +
-            `from ${wineContext.producer} (${wineContext.region}). ` +
-            `Rating: ${wineContext.rating}/100. ` +
-            `Tasting notes: ${wineContext.tasting_notes}. `;
-        }
+  //       if (wineContext) {
+  //         contextPrompt += `The user is asking about the wine: ${wineContext.wine_name} ` +
+  //           `from ${wineContext.producer} (${wineContext.region}). ` +
+  //           `Rating: ${wineContext.rating}/100. ` +
+  //           `Tasting notes: ${wineContext.tasting_notes}. `;
+  //       }
         
-        contextPrompt += "Please provide helpful, accurate information about wines, pairings, and wine culture.";
+  //       contextPrompt += "Please provide helpful, accurate information about wines, pairings, and wine culture.";
 
-        const response = await this.llm!.invoke(contextPrompt + "\n\nUser: " + message);
-        return response.content as string;
-      });
-    } catch (error) {
-      console.error('Error in wine chat:', error);
-      return this.getMockChatResponse(message, wineContext);
-    }
-  }
+  //       const response = await this.llm!.invoke(contextPrompt + "\n\nUser: " + message);
+  //       return response.content as string;
+  //     });
+  //   } catch (error) {
+  //     console.error('Error in wine chat:', error);
+  //     return this.getMockChatResponse(message, wineContext);
+  //   }
+  // }
 
   private getMockChatResponse(message: string, wineContext?: WineData): string {
     if (wineContext) {
@@ -245,129 +263,129 @@ class LangChainWineService {
     return "I'd be happy to help you with wine recommendations, pairings, or any wine-related questions. What would you like to know?";
   }
 
-  async enhanceWineData(wineData: WineData): Promise<EnhancedWineData> {
-    if (!this.apiKey || !this.llm) {
-      return this.getMockEnhancedData(wineData);
-    }
+//   async enhanceWineData(wineData: WineData): Promise<EnhancedWineData> {
+//     if (!this.apiKey || !this.llm) {
+//       return this.getMockEnhancedData(wineData);
+//     }
 
-    try {
-      return await this.enqueueRequest(async () => {
-        const prompt = `You are a wine expert and sommelier. Given the following wine information, provide enhanced details in JSON format.
+//     try {
+//       return await this.enqueueRequest(async () => {
+//         const prompt = `You are a wine expert and sommelier. Given the following wine information, provide enhanced details in JSON format.
 
-Wine Information:
-- Name: ${wineData.wine_name || 'Unknown'}
-- Producer: ${wineData.producer || 'Unknown'}
-- Region: ${wineData.region || 'Unknown'}
-- Vintage: ${wineData.vintage || 'Unknown'}
-- Rating: ${wineData.rating || 'Unknown'}/100
-- Current Tasting Notes: ${wineData.tasting_notes || 'No tasting notes available'}
-- Blend: ${wineData.blend || 'Unknown'}
+// Wine Information:
+// - Name: ${wineData.wine_name || 'Unknown'}
+// - Producer: ${wineData.producer || 'Unknown'}
+// - Region: ${wineData.region || 'Unknown'}
+// - Vintage: ${wineData.vintage || 'Unknown'}
+// - Rating: ${wineData.rating || 'Unknown'}/100
+// - Current Tasting Notes: ${wineData.tasting_notes || 'No tasting notes available'}
+// - Blend: ${wineData.blend || 'Unknown'}
 
-Please provide enhanced information in the following JSON structure:
-{
-  "enhanced_tasting_notes": "Detailed professional tasting notes with specific flavor compounds and structure analysis",
-  "wine_style": "Wine style classification (e.g., 'Full-bodied Cabernet Sauvignon', 'Elegant Burgundian Pinot Noir')",
-  "aging_potential": "How long this wine can age and peak drinking window",
-  "serving_temp": "Optimal serving temperature range",
-  "decanting_time": "Recommended decanting time if applicable",
-  "food_pairings": ["List of 4-5 classic food pairings"],
-  "thai_food_pairings": [
-    {
-      "name": "Thai dish name in English",
-      "nameInThai": "Thai dish name in Thai script",
-      "description": "Brief description of the dish",
-      "spiceLevel": "mild|medium|hot",
-      "pairingReason": "Why this pairing works with wine characteristics"
-    }
-  ],
-  "similar_wines": ["List of 3-4 similar wines to try"],
-  "price_range": "Typical price range for this wine",
-  "collector_notes": "Notes for collectors about this wine's investment potential and rarity"
-}
+// Please provide enhanced information in the following JSON structure:
+// {
+//   "enhanced_tasting_notes": "Detailed professional tasting notes with specific flavor compounds and structure analysis",
+//   "wine_style": "Wine style classification (e.g., 'Full-bodied Cabernet Sauvignon', 'Elegant Burgundian Pinot Noir')",
+//   "aging_potential": "How long this wine can age and peak drinking window",
+//   "serving_temp": "Optimal serving temperature range",
+//   "decanting_time": "Recommended decanting time if applicable",
+//   "food_pairings": ["List of 4-5 classic food pairings"],
+//   "thai_food_pairings": [
+//     {
+//       "name": "Thai dish name in English",
+//       "nameInThai": "Thai dish name in Thai script",
+//       "description": "Brief description of the dish",
+//       "spiceLevel": "mild|medium|hot",
+//       "pairingReason": "Why this pairing works with wine characteristics"
+//     }
+//   ],
+//   "similar_wines": ["List of 3-4 similar wines to try"],
+//   "price_range": "Typical price range for this wine",
+//   "collector_notes": "Notes for collectors about this wine's investment potential and rarity"
+// }
 
-Focus on accuracy and provide specific, actionable information.`;
+// Focus on accuracy and provide specific, actionable information.`;
 
-        const response = await this.llm!.invoke("You are a professional sommelier and wine expert. Provide accurate, detailed wine information in the requested JSON format.\n\n" + prompt);
+//         const response = await this.llm!.invoke("You are a professional sommelier and wine expert. Provide accurate, detailed wine information in the requested JSON format.\n\n" + prompt);
 
-        let responseContent = response.content as string;
+//         let responseContent = response.content as string;
         
-        // Strip markdown code blocks if present
-        responseContent = responseContent.replace(/```json\s*/g, '').replace(/```\s*$/g, '').trim();
+//         // Strip markdown code blocks if present
+//         responseContent = responseContent.replace(/```json\s*/g, '').replace(/```\s*$/g, '').trim();
         
-        const enhancedData = JSON.parse(responseContent);
+//         const enhancedData = JSON.parse(responseContent);
         
-        return {
-          ...wineData,
-          ...enhancedData
-        };
-      });
-    } catch (error) {
-      console.error('Error enhancing wine data:', error);
-      return this.getMockEnhancedData(wineData);
-    }
-  }
+//         return {
+//           ...wineData,
+//           ...enhancedData
+//         };
+//       });
+//     } catch (error) {
+//       console.error('Error enhancing wine data:', error);
+//       return this.getMockEnhancedData(wineData);
+//     }
+//   }
 
-  async getWineRecommendations(wineData: WineData, preferences?: string[]): Promise<string[]> {
-    if (!this.apiKey || !this.llm) {
-      return this.getMockRecommendations(wineData);
-    }
+  // async getWineRecommendations(wineData: WineData, preferences?: string[]): Promise<string[]> {
+  //   if (!this.apiKey || !this.llm) {
+  //     return this.getMockRecommendations(wineData);
+  //   }
 
-    try {
-      return await this.enqueueRequest(async () => {
-        const prompt = `Based on the wine "${wineData.wine_name}" from ${wineData.region}, ${wineData.producer}, suggest 5 similar wines that someone who enjoys this wine would like. Consider the wine style, region, grape variety, and quality level. Return only a JSON array of wine names.`;
+  //   try {
+  //     return await this.enqueueRequest(async () => {
+  //       const prompt = `Based on the wine "${wineData.wine_name}" from ${wineData.region}, ${wineData.producer}, suggest 5 similar wines that someone who enjoys this wine would like. Consider the wine style, region, grape variety, and quality level. Return only a JSON array of wine names.`;
 
-        const response = await this.llm!.invoke("You are a wine expert providing recommendations. Return only a JSON array of wine names.\n\n" + prompt);
+  //       const response = await this.llm!.invoke("You are a wine expert providing recommendations. Return only a JSON array of wine names.\n\n" + prompt);
 
-        let responseContent = response.content as string;
+  //       let responseContent = response.content as string;
         
-        // Strip markdown code blocks if present
-        responseContent = responseContent.replace(/```json\s*/g, '').replace(/```\s*$/g, '').trim();
+  //       // Strip markdown code blocks if present
+  //       responseContent = responseContent.replace(/```json\s*/g, '').replace(/```\s*$/g, '').trim();
         
-        return JSON.parse(responseContent);
-      });
-    } catch (error) {
-      console.error('Error getting wine recommendations:', error);
-      return this.getMockRecommendations(wineData);
-    }
-  }
+  //       return JSON.parse(responseContent);
+  //     });
+  //   } catch (error) {
+  //     console.error('Error getting wine recommendations:', error);
+  //     return this.getMockRecommendations(wineData);
+  //   }
+  // }
 
-  async analyzeSentiment(reviews: string[]): Promise<{ overall: string; individual: Array<{ review: string; sentiment: string; score: number }> }> {
-    if (!this.apiKey || !this.llm) {
-      return this.getMockSentimentAnalysis(reviews);
-    }
+//   async analyzeSentiment(reviews: string[]): Promise<{ overall: string; individual: Array<{ review: string; sentiment: string; score: number }> }> {
+//     if (!this.apiKey || !this.llm) {
+//       return this.getMockSentimentAnalysis(reviews);
+//     }
 
-    try {
-      return await this.enqueueRequest(async () => {
-        const prompt = `Analyze the sentiment of these wine reviews and provide a JSON response:
+//     try {
+//       return await this.enqueueRequest(async () => {
+//         const prompt = `Analyze the sentiment of these wine reviews and provide a JSON response:
         
-Reviews: ${JSON.stringify(reviews)}
+// Reviews: ${JSON.stringify(reviews)}
 
-Return JSON in this format:
-{
-  "overall": "positive|neutral|negative",
-  "individual": [
-    {
-      "review": "original review text",
-      "sentiment": "positive|neutral|negative", 
-      "score": 0.0-1.0
-    }
-  ]
-}`;
+// Return JSON in this format:
+// {
+//   "overall": "positive|neutral|negative",
+//   "individual": [
+//     {
+//       "review": "original review text",
+//       "sentiment": "positive|neutral|negative", 
+//       "score": 0.0-1.0
+//     }
+//   ]
+// }`;
 
-        const response = await this.llm!.invoke("You are a sentiment analysis expert. Analyze wine review sentiments accurately.\n\n" + prompt);
+//         const response = await this.llm!.invoke("You are a sentiment analysis expert. Analyze wine review sentiments accurately.\n\n" + prompt);
 
-        let responseContent = response.content as string;
+//         let responseContent = response.content as string;
         
-        // Strip markdown code blocks if present
-        responseContent = responseContent.replace(/```json\s*/g, '').replace(/```\s*$/g, '').trim();
+//         // Strip markdown code blocks if present
+//         responseContent = responseContent.replace(/```json\s*/g, '').replace(/```\s*$/g, '').trim();
         
-        return JSON.parse(responseContent);
-      });
-    } catch (error) {
-      console.error('Error analyzing sentiment:', error);
-      return this.getMockSentimentAnalysis(reviews);
-    }
-  }
+//         return JSON.parse(responseContent);
+//       });
+//     } catch (error) {
+//       console.error('Error analyzing sentiment:', error);
+//       return this.getMockSentimentAnalysis(reviews);
+//     }
+//   }
 
   private getMockEnhancedData(wineData: WineData): EnhancedWineData {
     return {
@@ -421,113 +439,170 @@ Return JSON in this format:
     };
   }
 
-  async analyzeWineImage(imageFile: File): Promise<WineAnalysisResult> {
-    console.log("Analyzing wine image...");
-    console.log("API key: ", this.apiKey);
-    console.log("LLM: ", this.llm);
-    if (!this.apiKey || !this.llm) {
-      console.log("API key or LLM not found. Using mock data.");
-      return this.getMockWineAnalysis();
-    }
+  async analyzeWineImage(imageFile: File, model: 'normal' | 'advance' = 'normal'): Promise<WineAnalysisResult> {
+    console.log("Analyzing wine image using backend API with model:", model);
 
     try {
-      return await this.enqueueRequest(async () => {
-        // Convert file to base64
-        const base64Image = await this.fileToBase64(imageFile);
-        
-        const prompt = `Analyze this wine bottle image and extract comprehensive wine information. Look carefully at:
+      // Create FormData to send image file and model parameter
+      const formData = new FormData();
+      formData.append('image_file', imageFile);
+      formData.append('model', model);
 
-        MAIN LABEL:
-        1. Wine name (exact name from the label)
-        2. Producer/Winery name
-        3. Region/Appellation
-        4. Vintage year
-        5. Wine type/style
-
-        ***🔍 CRITICAL SEARCH: RATINGS & REVIEWS (SCAN ALL LABELS/STICKERS/NECK FOIL)***
-        6. Expert ratings/scores (numbers like 95/100, 97 points, etc.)
-        7. Critic names (James Suckling, Robert Parker, Wine Spectator, etc.)
-        8. Publication logos (Wine Advocate, JamesSuckling.com, etc.)
-        9. Review quotes or tasting notes from critics
-        10. Review dates
-
-        ADDITIONAL INFO:
-        11. Price information
-        12. Grape blend composition
-        13. Source URLs or QR codes
-
-        Provide the information in this EXACT JSON format:
-        {
-          "wine_name": "Exact wine name from label",
-          "rating": highest_expert_rating_number_if_visible,
-          "vintage": year_as_number,
-          "producer": "Producer/Winery name", 
-          "region": "Wine region/appellation",
-          "tasting_notes": "Main critic's tasting notes if visible, otherwise brief description based on wine type",
-          "review_date": "YYYY-MM-DD format if visible",
-          "price": "Price with currency symbol if visible",
-          "source_url": "URL or website if visible",
-          "found": true,
-          "blend": [
-            { "grape": "Grape_name", "percentage": percentage_number }
-          ],
-          "reviews": [
-            {
-              "critic": "Critic name (James Suckling, Robert Parker, etc.)",
-              "publication": "Publication name (JamesSuckling.com, Wine Advocate, etc.)",
-              "rating": rating_number,
-              "maxRating": 100,
-              "review": "Full review text if visible",
-              "reviewDate": "YYYY-MM-DD"
-            }
-          ]
-        }
-
-        IMPORTANT NOTES:
-        - **PRIORITY ALERT:** **Thoroughly examine ALL visible areas (front/back label, neck, stickers) for logos, text, and numbers related to wine critics and scores.**
-        - Extract **ALL visible ratings/reviews**, not just one.
-        - If multiple critics are shown, include all in the 'reviews' array.
-        - Use the highest rating as the main "rating" field.
-        - For blend, if it's a single varietal, use 100% for that grape.
-
-        If you cannot clearly read the wine label or identify the wine, return:
-        {
-          "wine_name": "Unknown Wine Label",
-          "found": false,
-          "error_message": "Unable to identify wine from the provided image. Please ensure the label is clearly visible and try again."
-        }
-        `;
-
-        const message = new HumanMessage({
-          content: [
-            { type: "text", text: prompt },
-            {
-              type: "image_url",
-              image_url: {
-                url: `data:${imageFile.type};base64,${base64Image}`,
-              },
-            },
-          ],
-        });
-
-        const response = await this.llm!.invoke([message]);
-
-        let responseContent = response.content as string;
-        
-        // Strip markdown code blocks if present
-        responseContent = responseContent.replace(/```json\s*/g, '').replace(/```\s*$/g, '').trim();
-        
-        const analysisResult = JSON.parse(responseContent);
-        return analysisResult;
+      // Call the backend streaming API
+      const response = await fetch('http://localhost:7000/api/v1/wine/agent/useruploaded_image/stream', {
+        method: 'POST',
+        body: formData,
       });
+
+      if (!response.ok) {
+        throw new Error(`API request failed with status ${response.status}`);
+      }
+
+      // Read the streaming response
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+      let fullResponse = '';
+
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value, { stream: true });
+          fullResponse += chunk;
+        }
+      }
+
+      // Parse the accumulated response as JSON
+      let apiResponse: RealAPIWineResponse;
+
+      try {
+        // Strip any markdown code blocks if present
+        const cleanedResponse = fullResponse
+          .replace(/```json\s*/g, '')
+          .replace(/```\s*$/g, '')
+          .trim();
+
+        apiResponse = JSON.parse(cleanedResponse);
+      } catch (parseError) {
+        console.error('Error parsing API response:', parseError);
+        console.log('Raw response:', fullResponse);
+
+        // Return error result if parsing fails
+        return {
+          wine_name: "Analysis Error",
+          found: false,
+          error_message: "Failed to parse wine analysis result. Please try again."
+        };
+      }
+
+      // Transform real API response to WineAnalysisResult format
+      const analysisResult: WineAnalysisResult = {
+        wine_name: apiResponse.wine_name,
+        found: true,
+        region: apiResponse.region,
+        tasting_notes: apiResponse.tasting_notes,
+        price: apiResponse.pricing,
+        source_url: apiResponse.references,
+        // New fields from real API
+        grape_varieties: apiResponse.grape_varieties,
+        scores: apiResponse.scores,
+        pricing: apiResponse.pricing,
+        full_reviews: apiResponse.full_reviews,
+        references: apiResponse.references,
+      };
+
+      // Parse rating from scores field (e.g., "James Suckling: 95 points" -> 95)
+      if (apiResponse.scores) {
+        const ratingMatch = apiResponse.scores.match(/(\d+)\s*points?/i);
+        if (ratingMatch) {
+          analysisResult.rating = parseInt(ratingMatch[1], 10);
+        }
+      }
+
+      // Extract vintage from wine name if present (e.g., "Château Haut-Brion 2004" -> 2004)
+      const vintageMatch = apiResponse.wine_name.match(/\b(19|20)\d{2}\b/);
+      if (vintageMatch) {
+        analysisResult.vintage = parseInt(vintageMatch[0], 10);
+      }
+
+      // Convert grape_varieties to blend format for existing UI components
+      if (apiResponse.grape_varieties && apiResponse.grape_varieties.length > 0) {
+        // For now, distribute equally since we don't have percentages
+        const percentage = Math.floor(100 / apiResponse.grape_varieties.length);
+        analysisResult.blend = apiResponse.grape_varieties.map((grape, index) => ({
+          grape: grape,
+          percentage: index === 0 ? 100 - (percentage * (apiResponse.grape_varieties!.length - 1)) : percentage
+        }));
+      }
+
+      // Parse full_reviews into reviews array
+      if (apiResponse.full_reviews) {
+        const reviews = this.parseFullReviews(apiResponse.full_reviews, apiResponse.scores);
+        if (reviews.length > 0) {
+          analysisResult.reviews = reviews;
+        }
+      }
+
+      return analysisResult;
     } catch (error) {
       console.error('Error analyzing wine image:', error);
       return {
         wine_name: "Analysis Error",
         found: false,
-        error_message: "Failed to analyze wine image. Please try again."
+        error_message: error instanceof Error ? error.message : "Failed to analyze wine image. Please try again."
       };
     }
+  }
+
+  private parseFullReviews(fullReviews: string, scores?: string): Array<{
+    critic: string;
+    publication: string;
+    rating: number;
+    maxRating: number;
+    review: string;
+    reviewDate: string;
+  }> {
+    const reviews: Array<{
+      critic: string;
+      publication: string;
+      rating: number;
+      maxRating: number;
+      review: string;
+      reviewDate: string;
+    }> = [];
+
+    try {
+      // Parse the full_reviews text
+      // Format: "James Suckling:\nVintage 2004 | Score: 95/100\n\n\"Review text...\""
+      const criticMatch = fullReviews.match(/^([^:]+):/);
+      const scoreMatch = fullReviews.match(/Score:\s*(\d+)\/(\d+)/);
+      const vintageMatch = fullReviews.match(/Vintage\s+(\d{4})/);
+      const reviewMatch = fullReviews.match(/"([^"]+)"/);
+
+      if (criticMatch) {
+        const critic = criticMatch[1].trim();
+        const rating = scoreMatch ? parseInt(scoreMatch[1], 10) : 0;
+        const maxRating = scoreMatch ? parseInt(scoreMatch[2], 10) : 100;
+        const review = reviewMatch ? reviewMatch[1] : fullReviews.split('\n').slice(2).join('\n').replace(/"/g, '').trim();
+        const reviewDate = vintageMatch ? `${vintageMatch[1]}-01-01` : new Date().toISOString().split('T')[0];
+
+        reviews.push({
+          critic: critic,
+          publication: critic.includes('Suckling') ? 'JamesSuckling.com' :
+                      critic.includes('Parker') ? 'Wine Advocate' :
+                      critic.includes('Spectator') ? 'Wine Spectator' : critic,
+          rating: rating,
+          maxRating: maxRating,
+          review: review,
+          reviewDate: reviewDate
+        });
+      }
+    } catch (error) {
+      console.error('Error parsing full reviews:', error);
+    }
+
+    return reviews;
   }
 
   private async fileToBase64(file: File): Promise<string> {

@@ -88,6 +88,42 @@
   font-weight: 600;
 }
 
+.model-selector {
+  display: flex;
+  gap: 8px;
+  background: #f8f9fa;
+  padding: 4px;
+  border-radius: 20px;
+  border: 1px solid #dee2e6;
+}
+
+.model-button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 16px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: transparent;
+  color: #495057;
+}
+
+.model-button:hover:not(:disabled) {
+  background: #e9ecef;
+}
+
+.model-button.active {
+  background: linear-gradient(135deg, #722f37, #8b3a42);
+  color: white;
+  box-shadow: 0 2px 8px rgba(114, 47, 55, 0.3);
+}
+
+.model-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .upload-section {
   margin-bottom: 20px;
 }
@@ -424,6 +460,47 @@
   line-height: 1.6;
   font-size: 1rem;
   margin: 0;
+}
+
+.grape-varieties {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  border: 1px solid rgba(114, 47, 55, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.grape-varieties h3 {
+  color: #722f37;
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin: 0 0 12px 0;
+  border-bottom: 2px solid #722f37;
+  padding-bottom: 8px;
+}
+
+.grape-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.grape-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #722f37 0%, #8b3a42 100%);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(114, 47, 55, 0.2);
+  transition: all 0.3s ease;
+}
+
+.grape-badge:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(114, 47, 55, 0.3);
 }
 
 @media (max-width: 768px) {

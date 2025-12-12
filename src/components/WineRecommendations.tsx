@@ -28,15 +28,15 @@ const WineRecommendations: React.FC<WineRecommendationsProps> = ({ wineData }) =
     setLoading(true);
     setError('');
     
-    try {
-      const recs = await wineService.getWineRecommendations(wineData);
-      setRecommendations(recs);
-    } catch (err) {
-      setError('Failed to load recommendations');
-      console.error('Recommendation error:', err);
-    } finally {
-      setLoading(false);
-    }
+    // try {
+    //   const recs = await wineService.getWineRecommendations(wineData);
+    //   setRecommendations(recs);
+    // } catch (err) {
+    //   setError('Failed to load recommendations');
+    //   console.error('Recommendation error:', err);
+    // } finally {
+    //   setLoading(false);
+    // }
   };
 
   if (loading) {

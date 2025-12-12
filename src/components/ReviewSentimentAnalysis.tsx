@@ -32,16 +32,16 @@ const ReviewSentimentAnalysis: React.FC<ReviewSentimentAnalysisProps> = ({ revie
   const analyzeSentiment = async () => {
     setLoading(true);
     
-    try {
-      const reviewTexts = reviews.map(r => r.review);
-      const analysis = await wineService.analyzeSentiment(reviewTexts);
-      setSentimentData(analysis);
-      setShowAnalysis(true);
-    } catch (error) {
-      console.error('Sentiment analysis failed:', error);
-    } finally {
-      setLoading(false);
-    }
+    // try {
+    //   const reviewTexts = reviews.map(r => r.review);
+    //   const analysis = await wineService.analyzeSentiment(reviewTexts);
+    //   setSentimentData(analysis);
+    //   setShowAnalysis(true);
+    // } catch (error) {
+    //   console.error('Sentiment analysis failed:', error);
+    // } finally {
+    //   setLoading(false);
+    // }
   };
 
   const getSentimentColor = (sentiment: string) => {

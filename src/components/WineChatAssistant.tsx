@@ -52,15 +52,15 @@ const WineChatAssistant: React.FC<WineChatAssistantProps> = ({ wineData }) => {
     addMessage('user', userMessage);
     setIsLoading(true);
 
-    try {
-      const response = await wineService.chatWithWineExpert(userMessage, wineData);
-      addMessage('assistant', response);
-    } catch (error) {
-      console.error('Chat error:', error);
-      addMessage('assistant', "I'm sorry, I encountered an error. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
+    // try {
+    //   const response = await wineService.chatWithWineExpert(userMessage, wineData);
+    //   addMessage('assistant', response);
+    // } catch (error) {
+    //   console.error('Chat error:', error);
+    //   addMessage('assistant', "I'm sorry, I encountered an error. Please try again.");
+    // } finally {
+    //   setIsLoading(false);
+    // }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {

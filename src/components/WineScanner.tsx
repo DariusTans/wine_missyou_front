@@ -46,6 +46,12 @@ interface WineRating {
   blend?: BlendVariety[];
   reviews?: CriticReview[];
   thaiFoodPairings?: PairingDish[];
+  // New fields from real API
+  grape_varieties?: string[];
+  scores?: string;
+  pricing?: string;
+  full_reviews?: string;
+  references?: string;
 }
 
 const WineScanner: React.FC = () => {
@@ -59,6 +65,7 @@ const WineScanner: React.FC = () => {
   const [useMockData, setUseMockData] = useState(true);
   const [useAIEnhancement, setUseAIEnhancement] = useState(true);
   const [showWineSearch, setShowWineSearch] = useState(false);
+  const [selectedModel, setSelectedModel] = useState<'normal' | 'advance'>('normal');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const getMockWineData = (): WineRating => {
@@ -224,7 +231,7 @@ const WineScanner: React.FC = () => {
         }
       } else {
         // Use LangChain vision model instead of localhost:8000/wine
-        const analysisResult = await wineService.analyzeWineImage(selectedFile);
+        const analysisResult = await wineService.analyzeWineImage(selectedFile, selectedModel);
         
         // Convert WineAnalysisResult to WineRating format
         const wineRating: WineRating = {
@@ -238,7 +245,15 @@ const WineScanner: React.FC = () => {
           price: analysisResult.price,
           source_url: analysisResult.source_url,
           found: analysisResult.found,
-          error_message: analysisResult.error_message
+          error_message: analysisResult.error_message,
+          // Add new API response fields
+          blend: analysisResult.blend,
+          reviews: analysisResult.reviews,
+          grape_varieties: analysisResult.grape_varieties,
+          scores: analysisResult.scores,
+          pricing: analysisResult.pricing,
+          full_reviews: analysisResult.full_reviews,
+          references: analysisResult.references
         };
         
         setResult(wineRating);
@@ -258,23 +273,23 @@ const WineScanner: React.FC = () => {
   const enhanceWineData = async (wineData: WineRating) => {
     if (!useAIEnhancement) return;
     
-    setEnhancing(true);
-    try {
-      const enhanced = await wineService.enhanceWineData({
-        wine_name: wineData.wine_name,
-        rating: wineData.rating,
-        vintage: wineData.vintage,
-        producer: wineData.producer,
-        region: wineData.region,
-        tasting_notes: wineData.tasting_notes
-      });
+    // setEnhancing(true);
+    // try {
+    //   const enhanced = await wineService.enhanceWineData({
+    //     wine_name: wineData.wine_name,
+    //     rating: wineData.rating,
+    //     vintage: wineData.vintage,
+    //     producer: wineData.producer,
+    //     region: wineData.region,
+    //     tasting_notes: wineData.tasting_notes
+    //   });
       
-      setEnhancedResult(enhanced);
-    } catch (err) {
-      console.error('Failed to enhance wine data:', err);
-    } finally {
-      setEnhancing(false);
-    }
+    //   setEnhancedResult(enhanced);
+    // } catch (err) {
+    //   console.error('Failed to enhance wine data:', err);
+    // } finally {
+    //   setEnhancing(false);
+    // }
   };
 
   const handleWineSelect = async (wineData: any) => {
@@ -335,7 +350,7 @@ const WineScanner: React.FC = () => {
               {useMockData ? '🧪 Demo Mode' : '🔗 Live API'}
             </span>
           </label>
-          
+
           <label className="toggle-label">
             <input
               type="checkbox"
@@ -347,6 +362,23 @@ const WineScanner: React.FC = () => {
               {useAIEnhancement ? '🤖 AI Enhancement' : '📊 Basic Data'}
             </span>
           </label>
+
+          <div className="model-selector">
+            <button
+              className={`model-button ${selectedModel === 'normal' ? 'active' : ''}`}
+              onClick={() => setSelectedModel('normal')}
+              disabled={useMockData}
+            >
+              ⚡ Normal
+            </button>
+            <button
+              className={`model-button ${selectedModel === 'advance' ? 'active' : ''}`}
+              onClick={() => setSelectedModel('advance')}
+              disabled={useMockData}
+            >
+              🚀 Advance
+            </button>
+          </div>
         </div>
       </div>
 
@@ -431,28 +463,35 @@ const WineScanner: React.FC = () => {
                     <span className="info-value">{result.vintage}</span>
                   </div>
                 )}
-                
+
                 {result.producer && (
                   <div className="info-item">
                     <span className="info-label">Producer</span>
                     <span className="info-value">{result.producer}</span>
                   </div>
                 )}
-                
+
                 {result.region && (
                   <div className="info-item">
                     <span className="info-label">Region</span>
                     <span className="info-value">{result.region}</span>
                   </div>
                 )}
-                
-                {result.price && (
+
+                {(result.price || result.pricing) && (
                   <div className="info-item">
                     <span className="info-label">Price</span>
-                    <span className="info-value">{result.price}</span>
+                    <span className="info-value">{result.pricing || result.price}</span>
                   </div>
                 )}
-                
+
+                {result.scores && (
+                  <div className="info-item">
+                    <span className="info-label">Score</span>
+                    <span className="info-value">{result.scores}</span>
+                  </div>
+                )}
+
                 {result.review_date && (
                   <div className="info-item">
                     <span className="info-label">Review Date</span>
@@ -460,6 +499,17 @@ const WineScanner: React.FC = () => {
                   </div>
                 )}
               </div>
+
+              {result.grape_varieties && result.grape_varieties.length > 0 && (
+                <div className="grape-varieties">
+                  <h3>🍇 Grape Varieties</h3>
+                  <div className="grape-list">
+                    {result.grape_varieties.map((grape, index) => (
+                      <span key={index} className="grape-badge">{grape}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {(enhancedResult?.enhanced_tasting_notes || result.tasting_notes) && (
                 <div className="tasting-notes">
@@ -514,7 +564,7 @@ const WineScanner: React.FC = () => {
                     </div>
                   )}
                   
-                  {enhancedResult.similar_wines && (
+                  {/* {enhancedResult.similar_wines && (
                     <div className="similar-wines">
                       <h3>🍷 Similar Wines to Try</h3>
                       <ul>
@@ -523,7 +573,7 @@ const WineScanner: React.FC = () => {
                         ))}
                       </ul>
                     </div>
-                  )}
+                  )} */}
                   
                   {enhancedResult.collector_notes && (
                     <div className="collector-notes">
@@ -549,7 +599,7 @@ const WineScanner: React.FC = () => {
                 />
               )}
               
-              <WineRecommendations 
+              {/* <WineRecommendations 
                 wineData={{
                   wine_name: result.wine_name,
                   rating: result.rating,
@@ -569,11 +619,19 @@ const WineScanner: React.FC = () => {
                   region: result.region,
                   tasting_notes: result.tasting_notes
                 }}
-              />
+              /> */}
 
-              {result.source_url && (
+              {(result.source_url || result.references) && (
                 <div className="source-link">
-                  <a href={result.source_url} target="_blank" rel="noopener noreferrer">
+                  <a
+                    href={
+                      (result.source_url || result.references)?.startsWith('http')
+                        ? (result.source_url || result.references)
+                        : `https://${result.source_url || result.references}`
+                    }
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     View Full Review
                   </a>
                 </div>
