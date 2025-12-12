@@ -66,6 +66,8 @@ const WineScanner: React.FC = () => {
   const [useAIEnhancement, setUseAIEnhancement] = useState(true);
   const [showWineSearch, setShowWineSearch] = useState(false);
   const [selectedModel, setSelectedModel] = useState<'normal' | 'advance'>('normal');
+  const [streamingText, setStreamingText] = useState<string>('');
+  const [isStreaming, setIsStreaming] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const getMockWineData = (): WineRating => {
@@ -217,6 +219,8 @@ const WineScanner: React.FC = () => {
     setLoading(true);
     setError('');
     setResult(null);
+    setStreamingText('');
+    setIsStreaming(false);
 
     try {
       if (useMockData) {
@@ -224,14 +228,27 @@ const WineScanner: React.FC = () => {
         await new Promise(resolve => setTimeout(resolve, 1500 + Math.random() * 1000));
         const mockData = getMockWineData();
         setResult(mockData);
-        
+
         // Enhance wine data with AI if enabled and wine was found
         if (useAIEnhancement && mockData.found) {
           await enhanceWineData(mockData);
         }
       } else {
-        // Use LangChain vision model instead of localhost:8000/wine
-        const analysisResult = await wineService.analyzeWineImage(selectedFile, selectedModel);
+        // Enable streaming mode
+        setIsStreaming(true);
+
+        // Use LangChain vision model with streaming callback
+        const analysisResult = await wineService.analyzeWineImage(
+          selectedFile,
+          selectedModel,
+          (text) => {
+            // Update streaming text in real-time
+            setStreamingText(text);
+          }
+        );
+
+        // Streaming completed
+        setIsStreaming(false);
         
         // Convert WineAnalysisResult to WineRating format
         const wineRating: WineRating = {
@@ -320,6 +337,8 @@ const WineScanner: React.FC = () => {
     setEnhancedResult(null);
     setError('');
     setShowWineSearch(false);
+    setStreamingText('');
+    setIsStreaming(false);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -439,6 +458,22 @@ const WineScanner: React.FC = () => {
       {error && (
         <div className="error-message">
           <p>❌ {error}</p>
+        </div>
+      )}
+
+      {isStreaming && streamingText && (
+        <div className="streaming-section">
+          <div className="streaming-header">
+            <h3>🔄 Analyzing Wine...</h3>
+            <div className="streaming-indicator">
+              <span className="dot"></span>
+              <span className="dot"></span>
+              <span className="dot"></span>
+            </div>
+          </div>
+          <div className="streaming-content">
+            <pre>{streamingText}</pre>
+          </div>
         </div>
       )}
 

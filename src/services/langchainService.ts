@@ -439,7 +439,11 @@ class LangChainWineService {
     };
   }
 
-  async analyzeWineImage(imageFile: File, model: 'normal' | 'advance' = 'normal'): Promise<WineAnalysisResult> {
+  async analyzeWineImage(
+    imageFile: File,
+    model: 'normal' | 'advance' = 'normal',
+    onStreamUpdate?: (text: string) => void
+  ): Promise<WineAnalysisResult> {
     console.log("Analyzing wine image using backend API with model:", model);
 
     try {
@@ -470,6 +474,11 @@ class LangChainWineService {
 
           const chunk = decoder.decode(value, { stream: true });
           fullResponse += chunk;
+
+          // Call the streaming callback with accumulated text
+          if (onStreamUpdate) {
+            onStreamUpdate(fullResponse);
+          }
         }
       }
 
