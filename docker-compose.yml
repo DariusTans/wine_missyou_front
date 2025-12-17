@@ -3,16 +3,20 @@ version: '3.8'
 services:
   wine-app:
     build: .
+    container_name: wine-frontend
     ports:
       - "3000:80"
     environment:
       - NODE_ENV=production
+    networks:
+      - wine-network
     restart: unless-stopped
-    
+
   wine-app-dev:
     build:
       context: .
       dockerfile: Dockerfile.dev
+    container_name: wine-frontend-dev
     ports:
       - "3001:3000"
     volumes:
@@ -21,6 +25,13 @@ services:
     environment:
       - NODE_ENV=development
       - CHOKIDAR_USEPOLLING=true
+    networks:
+      - wine-network
     stdin_open: true
     tty: true
     restart: unless-stopped
+
+networks:
+  wine-network:
+    driver: bridge
+    name: wine-public-network

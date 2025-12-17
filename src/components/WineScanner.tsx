@@ -62,7 +62,7 @@ const WineScanner: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [enhancing, setEnhancing] = useState(false);
   const [error, setError] = useState<string>('');
-  const [useMockData, setUseMockData] = useState(true);
+  const [useMockData, setUseMockData] = useState(false);
   const [useAIEnhancement, setUseAIEnhancement] = useState(true);
   const [showWineSearch, setShowWineSearch] = useState(false);
   const [selectedModel, setSelectedModel] = useState<'normal' | 'advance'>('normal');
