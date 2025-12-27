@@ -694,8 +694,89 @@ class LangChainWineService {
         ]
       }
     ];
-    
+
     return mockAnalyses[Math.floor(Math.random() * mockAnalyses.length)];
+  }
+
+  async fetchThaiFoodPairings(
+    wineFullName: string,
+    model: 'normal' | 'advance' = 'normal'
+  ): Promise<Array<{
+    name: string;
+    nameInThai: string;
+    description: string;
+    spiceLevel: 'mild' | 'medium' | 'hot';
+    pairingReason: string;
+  }>> {
+    console.log("🍜 fetchThaiFoodPairings called with:", { wineFullName, model });
+
+    try {
+      // Get API base URL from environment variable with fallback
+      const apiBaseUrl = process.env.REACT_APP_API_BASE_URL || 'http://localhost:7000';
+      const apiUrl = `${apiBaseUrl}/api/v1/wine/agent/food_pairing/stream?wine_full_name=${encodeURIComponent(wineFullName)}&model=${model}`;
+
+      console.log("🍜 Calling API:", apiUrl);
+
+      // Call the food pairing API
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'accept': 'application/json',
+        },
+      });
+
+      console.log("🍜 API response status:", response.status, response.statusText);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("🍜 API error response:", errorText);
+        throw new Error(`API request failed with status ${response.status}: ${errorText}`);
+      }
+
+      // Read the streaming response
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+      let fullResponse = '';
+
+      if (reader) {
+        console.log("🍜 Reading streaming response...");
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value, { stream: true });
+          fullResponse += chunk;
+        }
+      }
+
+      console.log("🍜 Full response received:", fullResponse);
+
+      // Parse the response
+      let apiResponse: { thaiFoodPairings: Array<any> };
+
+      try {
+        // Strip any markdown code blocks if present
+        const cleanedResponse = fullResponse
+          .replace(/```json\s*/g, '')
+          .replace(/```\s*$/g, '')
+          .trim();
+
+        console.log("🍜 Cleaned response:", cleanedResponse);
+        apiResponse = JSON.parse(cleanedResponse);
+        console.log("🍜 Parsed API response:", apiResponse);
+      } catch (parseError) {
+        console.error('🍜 Error parsing food pairing response:', parseError);
+        console.log('🍜 Raw response:', fullResponse);
+        return [];
+      }
+
+      const pairings = apiResponse.thaiFoodPairings || [];
+      console.log("🍜 Returning pairings:", pairings);
+      return pairings;
+    } catch (error) {
+      console.error('🍜 Error fetching Thai food pairings:', error);
+      return [];
+    }
   }
 }
 

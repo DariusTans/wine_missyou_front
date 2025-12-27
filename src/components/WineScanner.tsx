@@ -68,6 +68,7 @@ const WineScanner: React.FC = () => {
   const [selectedModel, setSelectedModel] = useState<'normal' | 'advance'>('normal');
   const [streamingText, setStreamingText] = useState<string>('');
   const [isStreaming, setIsStreaming] = useState(false);
+  const [loadingThaiFoodPairings, setLoadingThaiFoodPairings] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const getMockWineData = (): WineRating => {
@@ -213,6 +214,38 @@ const WineScanner: React.FC = () => {
     }
   };
 
+  const fetchThaiFoodPairingsForWine = async (wineName: string) => {
+    setLoadingThaiFoodPairings(true);
+    try {
+      console.log('🍜 Fetching Thai food pairings for:', wineName, 'with model:', selectedModel);
+      const pairings = await wineService.fetchThaiFoodPairings(wineName, selectedModel);
+
+      console.log('🍜 Thai food pairings received:', pairings);
+
+      if (pairings && pairings.length > 0) {
+        console.log('🍜 Setting Thai food pairings to result state');
+        setResult(prevResult => {
+          if (!prevResult) {
+            console.warn('🍜 Previous result is null, cannot set pairings');
+            return null;
+          }
+          const updatedResult = {
+            ...prevResult,
+            thaiFoodPairings: pairings
+          };
+          console.log('🍜 Updated result with Thai food pairings:', updatedResult);
+          return updatedResult;
+        });
+      } else {
+        console.warn('🍜 No Thai food pairings received from API');
+      }
+    } catch (error) {
+      console.error('🍜 Error fetching Thai food pairings:', error);
+    } finally {
+      setLoadingThaiFoodPairings(false);
+    }
+  };
+
   const handleScan = async () => {
     if (!selectedFile) return;
 
@@ -228,6 +261,11 @@ const WineScanner: React.FC = () => {
         await new Promise(resolve => setTimeout(resolve, 1500 + Math.random() * 1000));
         const mockData = getMockWineData();
         setResult(mockData);
+
+        // Fetch Thai food pairings from API
+        if (mockData.found && mockData.wine_name) {
+          await fetchThaiFoodPairingsForWine(mockData.wine_name);
+        }
 
         // Enhance wine data with AI if enabled and wine was found
         if (useAIEnhancement && mockData.found) {
@@ -249,7 +287,7 @@ const WineScanner: React.FC = () => {
 
         // Streaming completed
         setIsStreaming(false);
-        
+
         // Convert WineAnalysisResult to WineRating format
         const wineRating: WineRating = {
           wine_name: analysisResult.wine_name,
@@ -272,9 +310,14 @@ const WineScanner: React.FC = () => {
           full_reviews: analysisResult.full_reviews,
           references: analysisResult.references
         };
-        
+
         setResult(wineRating);
-        
+
+        // Fetch Thai food pairings from API
+        if (wineRating.found && wineRating.wine_name) {
+          await fetchThaiFoodPairingsForWine(wineRating.wine_name);
+        }
+
         // Enhance wine data with AI if enabled and wine was found
         if (useAIEnhancement && wineRating.found) {
           await enhanceWineData(wineRating);
@@ -320,10 +363,15 @@ const WineScanner: React.FC = () => {
       tasting_notes: wineData.tasting_notes,
       found: true
     };
-    
+
     setResult(wineRating);
     setShowWineSearch(false);
-    
+
+    // Fetch Thai food pairings from API
+    if (wineRating.wine_name) {
+      await fetchThaiFoodPairingsForWine(wineRating.wine_name);
+    }
+
     // Enhance wine data with AI if enabled
     if (useAIEnhancement) {
       await enhanceWineData(wineRating);
@@ -339,6 +387,7 @@ const WineScanner: React.FC = () => {
     setShowWineSearch(false);
     setStreamingText('');
     setIsStreaming(false);
+    setLoadingThaiFoodPairings(false);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -626,10 +675,24 @@ const WineScanner: React.FC = () => {
                   <ReviewSentimentAnalysis reviews={result.reviews} />
                 </>
               )}
-              
-              {(enhancedResult?.thai_food_pairings || result.thaiFoodPairings) && (
-                <ThaiFoodPairing 
-                  pairings={(enhancedResult?.thai_food_pairings || result.thaiFoodPairings)!} 
+
+              {loadingThaiFoodPairings && (
+                <div className="thai-food-loading">
+                  <div className="loading-header">
+                    <h3>🍜 Loading Thai Food Pairings...</h3>
+                    <div className="streaming-indicator">
+                      <span className="dot"></span>
+                      <span className="dot"></span>
+                      <span className="dot"></span>
+                    </div>
+                  </div>
+                  <p>Finding the perfect Thai dishes to pair with your wine...</p>
+                </div>
+              )}
+
+              {!loadingThaiFoodPairings && (enhancedResult?.thai_food_pairings || result.thaiFoodPairings) && (
+                <ThaiFoodPairing
+                  pairings={(enhancedResult?.thai_food_pairings || result.thaiFoodPairings)!}
                   wineStyle={enhancedResult?.wine_style || "Barolo/Nebbiolo"}
                 />
               )}
