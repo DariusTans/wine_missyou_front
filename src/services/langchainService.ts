@@ -39,7 +39,11 @@ interface RealAPIWineResponse {
   wine_name: string;
   grape_varieties?: string[];
   region?: string;
-  scores?: string;
+  scores?: {
+    james_suckling?: number;
+    robert_parker?: number;
+    vivno?: number;
+  };
   tasting_notes?: string;
   pricing?: string;
   full_reviews?: string;
@@ -49,6 +53,7 @@ interface RealAPIWineResponse {
 interface WineAnalysisResult {
   wine_name: string;
   rating?: number;
+  wineMissYouScore?: number; // Combined score calculated from all sources
   vintage?: number;
   producer?: string;
   region?: string;
@@ -69,7 +74,11 @@ interface WineAnalysisResult {
   error_message?: string;
   // New fields from real API
   grape_varieties?: string[];
-  scores?: string;
+  scores?: {
+    james_suckling?: number;
+    robert_parker?: number;
+    vivno?: number;
+  };
   pricing?: string;
   full_reviews?: string;
   references?: string;
@@ -524,12 +533,10 @@ class LangChainWineService {
         references: apiResponse.references,
       };
 
-      // Parse rating from scores field (e.g., "James Suckling: 95 points" -> 95)
+      // Calculate WineMissYouScore from all available scores
       if (apiResponse.scores) {
-        const ratingMatch = apiResponse.scores.match(/(\d+)\s*points?/i);
-        if (ratingMatch) {
-          analysisResult.rating = parseInt(ratingMatch[1], 10);
-        }
+        analysisResult.wineMissYouScore = this.calculateWineMissYouScore(apiResponse.scores);
+        analysisResult.rating = analysisResult.wineMissYouScore; // Use WineMissYouScore as the primary rating
       }
 
       // Extract vintage from wine name if present (e.g., "Château Haut-Brion 2004" -> 2004)
@@ -615,6 +622,35 @@ class LangChainWineService {
     }
 
     return reviews;
+  }
+
+  private calculateWineMissYouScore(scores?: {
+    james_suckling?: number;
+    robert_parker?: number;
+    vivno?: number;
+  }): number | undefined {
+    if (!scores) return undefined;
+
+    // Extract individual scores, defaulting to 0 if not available
+    const jamesScore = scores.james_suckling || 0;
+    const robertScore = scores.robert_parker || 0;
+    const vivinoScore = scores.vivno || 0;
+
+    // Check if at least one score is available
+    if (jamesScore === 0 && robertScore === 0 && vivinoScore === 0) {
+      return undefined;
+    }
+
+    // Calculate WineMissYouScore
+    // Formula: ((((james_score/20)*0.45)+((robert_score/20)*0.45)+((vivino_score*0.1)))*20
+    const combinedScore = (
+      ((jamesScore / 20) * 0.45) +
+      ((robertScore / 20) * 0.45) +
+      (vivinoScore * 0.1)
+    ) * 20;
+
+    // Round up the result
+    return Math.ceil(combinedScore);
   }
 
   private async fileToBase64(file: File): Promise<string> {

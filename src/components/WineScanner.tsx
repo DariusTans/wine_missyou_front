@@ -7,6 +7,7 @@ import WineRecommendations from './WineRecommendations';
 import ReviewSentimentAnalysis from './ReviewSentimentAnalysis';
 import WineChatAssistant from './WineChatAssistant';
 import WineSearch from './WineSearch';
+import WineScoreDisplay from './WineScoreDisplay';
 import { wineService, EnhancedWineData, WineAnalysisResult } from '../services/langchainService';
 
 interface BlendVariety {
@@ -34,6 +35,7 @@ interface PairingDish {
 interface WineRating {
   wine_name: string;
   rating?: number;
+  wineMissYouScore?: number;
   vintage?: number;
   producer?: string;
   region?: string;
@@ -48,7 +50,11 @@ interface WineRating {
   thaiFoodPairings?: PairingDish[];
   // New fields from real API
   grape_varieties?: string[];
-  scores?: string;
+  scores?: {
+    james_suckling?: number;
+    robert_parker?: number;
+    vivno?: number;
+  };
   pricing?: string;
   full_reviews?: string;
   references?: string;
@@ -292,6 +298,7 @@ const WineScanner: React.FC = () => {
         const wineRating: WineRating = {
           wine_name: analysisResult.wine_name,
           rating: analysisResult.rating,
+          wineMissYouScore: analysisResult.wineMissYouScore,
           vintage: analysisResult.vintage,
           producer: analysisResult.producer,
           region: analysisResult.region,
@@ -532,13 +539,12 @@ const WineScanner: React.FC = () => {
             <div className="wine-details">
               <div className="wine-header">
                 <h2>{result.wine_name}</h2>
-                {result.rating && (
-                  <div className="wine-rating">
-                    <span className="rating-score">{result.rating}</span>
-                    <span className="rating-max">/100</span>
-                  </div>
-                )}
               </div>
+
+              <WineScoreDisplay
+                wineMissYouScore={result.wineMissYouScore}
+                scores={result.scores}
+              />
 
               <div className="wine-info-grid">
                 {result.vintage && (
@@ -566,13 +572,6 @@ const WineScanner: React.FC = () => {
                   <div className="info-item">
                     <span className="info-label">Price</span>
                     <span className="info-value">{result.pricing || result.price}</span>
-                  </div>
-                )}
-
-                {result.scores && (
-                  <div className="info-item">
-                    <span className="info-label">Score</span>
-                    <span className="info-value">{result.scores}</span>
                   </div>
                 )}
 
