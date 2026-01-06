@@ -557,7 +557,7 @@ class LangChainWineService {
 
       // Parse full_reviews into reviews array
       if (apiResponse.full_reviews) {
-        const reviews = this.parseFullReviews(apiResponse.full_reviews, apiResponse.scores);
+        const reviews = this.parseFullReviews(apiResponse.full_reviews);
         if (reviews.length > 0) {
           analysisResult.reviews = reviews;
         }
@@ -574,7 +574,7 @@ class LangChainWineService {
     }
   }
 
-  private parseFullReviews(fullReviews: string, scores?: string): Array<{
+  private parseFullReviews(fullReviews: string): Array<{
     critic: string;
     publication: string;
     rating: number;
@@ -624,6 +624,35 @@ class LangChainWineService {
     return reviews;
   }
 
+  // private calculateWineMissYouScore(scores?: {
+  //   james_suckling?: number;
+  //   robert_parker?: number;
+  //   vivno?: number;
+  // }): number | undefined {
+  //   if (!scores) return undefined;
+
+  //   // Extract individual scores, defaulting to 0 if not available
+  //   const jamesScore = scores.james_suckling || 0;
+  //   const robertScore = scores.robert_parker || 0;
+  //   const vivinoScore = scores.vivno || 0;
+
+  //   // Check if at least one score is available
+  //   if (jamesScore === 0 && robertScore === 0 && vivinoScore === 0) {
+  //     return undefined;
+  //   }
+
+  //   // Calculate WineMissYouScore
+  //   // Formula: ((((james_score/20)*0.45)+((robert_score/20)*0.45)+((vivino_score*0.1)))*20
+  //   const combinedScore = (
+  //     ((jamesScore / 20) * 0.45) +
+  //     ((robertScore / 20) * 0.45) +
+  //     (vivinoScore * 0.1)
+  //   ) * 20;
+
+  //   // Round up the result
+  //   return Math.ceil(combinedScore);
+  // }
+
   private calculateWineMissYouScore(scores?: {
     james_suckling?: number;
     robert_parker?: number;
@@ -641,17 +670,44 @@ class LangChainWineService {
       return undefined;
     }
 
-    // Calculate WineMissYouScore
-    // Formula: ((((james_score/20)*0.45)+((robert_score/20)*0.45)+((vivino_score*0.1)))*20
-    const combinedScore = (
-      ((jamesScore / 20) * 0.45) +
-      ((robertScore / 20) * 0.45) +
-      (vivinoScore * 0.1)
-    ) * 20;
+    // Count available scores
+    const availableScores = [jamesScore, robertScore, vivinoScore].filter(s => s > 0);
+    
+    // If only one score is available, return it directly
+    if (availableScores.length === 1) {
+      if (jamesScore > 0) return Math.ceil(jamesScore);
+      if (robertScore > 0) return Math.ceil(robertScore);
+      if (vivinoScore > 0) return Math.ceil(vivinoScore * 20); // Convert Vivino to 100 scale
+    }
+
+    // For multiple scores, calculate weighted average
+    const nonVivinoCount = [jamesScore, robertScore].filter(s => s > 0).length;
+    const hasVivino = vivinoScore > 0;
+    
+    // Weight per non-Vivino score (James/Robert)
+    const weightPerScore = nonVivinoCount > 0 ? 0.9 / nonVivinoCount : 0;
+    const vivinoWeight = hasVivino ? 0.1 : 0;
+
+    // Calculate combined score
+    let combinedScore = 0;
+    
+    if (jamesScore > 0) {
+      combinedScore += (jamesScore / 20) * weightPerScore;
+    }
+    
+    if (robertScore > 0) {
+      combinedScore += (robertScore / 20) * weightPerScore;
+    }
+    
+    if (vivinoScore > 0) {
+      combinedScore += vivinoScore * vivinoWeight;
+    }
+
+    combinedScore *= 20;
 
     // Round up the result
     return Math.ceil(combinedScore);
-  }
+}
 
   private async fileToBase64(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
