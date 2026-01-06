@@ -462,7 +462,7 @@ class LangChainWineService {
       formData.append('model', model);
 
       // Get API base URL from environment variable with fallback
-      const apiBaseUrl = process.env.REACT_APP_API_BASE_URL || 'http://localhost:7000';
+      const apiBaseUrl = process.env.REACT_APP_API_BASE_URL || 'http://43.209.187.16:7000';
 
       // Call the backend streaming API
       const response = await fetch(`${apiBaseUrl}/api/v1/wine/agent/useruploaded_image/stream?model=${model}`, {
@@ -804,7 +804,7 @@ class LangChainWineService {
 
     try {
       // Get API base URL from environment variable with fallback
-      const apiBaseUrl = process.env.REACT_APP_API_BASE_URL || 'http://localhost:7000';
+      const apiBaseUrl = process.env.REACT_APP_API_BASE_URL || 'http://43.209.187.16:7000';
       const apiUrl = `${apiBaseUrl}/api/v1/wine/agent/food_pairing/stream?wine_full_name=${encodeURIComponent(wineFullName)}&model=${model}`;
 
       console.log("🍜 Calling API:", apiUrl);

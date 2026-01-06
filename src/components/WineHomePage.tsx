@@ -106,7 +106,7 @@ const WineHomePage: React.FC = () => {
       setError(null);
       setWineData(null);
 
-      const response = await fetch('http://localhost:7000/api/v1/wine/demo_vivino', {
+      const response = await fetch('http://http://43.209.187.16:7000/api/v1/wine/demo_vivino', {
         method: 'POST',
         headers: {
           'accept': 'application/json',
